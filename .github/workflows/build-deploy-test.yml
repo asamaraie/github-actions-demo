@@ -1,0 +1,59 @@
+name: Build Deploy Test
+
+# Only PRs targeting main trigger this. There's no "source branch" filter in
+# `on:`, so restricting to feature/* branches happens per-job below via
+# `if: startsWith(github.head_ref, 'feature/')`. github.head_ref is only set
+# on pull_request events.
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    if: startsWith(github.head_ref, 'feature/')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build static site
+        run: node src/build-site.js
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    if: startsWith(github.head_ref, 'feature/')
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    outputs:
+      page_url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  test:
+    needs: deploy
+    if: startsWith(github.head_ref, 'feature/')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Smoke test deployed page
+        run: curl -sSL "${{ needs.deploy.outputs.page_url }}" | grep "Hello, World!"
