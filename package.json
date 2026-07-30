@@ -1,0 +1,12 @@
+{
+  "name": "github-actions-demo",
+  "version": "1.0.0",
+  "description": "Learning GitHub Actions CI/CD with a simple Jest test",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}
