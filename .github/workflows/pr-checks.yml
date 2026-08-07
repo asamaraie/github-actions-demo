@@ -1,0 +1,50 @@
+name: PR Checks
+
+# Runs on every PR into main (from feature/* or release/* branches) as the
+# required status check before merge. This never deploys anywhere — Render
+# deploy hooks always redeploy the latest commit of the branch a service
+# tracks, not an unmerged PR branch, so there's nothing meaningful to deploy
+# yet. Deploying happens after merge, in deploy.yml.
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    if: startsWith(github.head_ref, 'feature/') || startsWith(github.head_ref, 'release/')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build static site
+        run: node src/build-site.js
+
+  test:
+    needs: build
+    if: startsWith(github.head_ref, 'feature/') || startsWith(github.head_ref, 'release/')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run unit tests
+        run: npm test
