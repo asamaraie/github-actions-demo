@@ -12,6 +12,7 @@ jobs:
   build:
     if: startsWith(github.head_ref, 'feature/')
     runs-on: ubuntu-latest
+    environment: production
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -66,6 +67,7 @@ jobs:
     needs: test
     if: startsWith(github.head_ref, 'feature/')
     runs-on: ubuntu-latest
+    environment: production
     steps:
       # Render deploys are triggered by POSTing to a Deploy Hook URL and run
       # asynchronously, so this step only *triggers* the deploy — it doesn't
