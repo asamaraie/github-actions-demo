@@ -5,8 +5,8 @@
   "main": "src/server.js",
   "type": "commonjs",
   "scripts": {
-    "build": "node scripts/build.js",
-    "start": "node src/server.js",
+    "build": "node --env-file-if-exists=.env scripts/build.js",
+    "start": "node --env-file-if-exists=.env src/server.js",
     "test": "jest --testPathPattern=tests/unit",
     "test:integration": "jest --testPathPattern=tests/integration",
     "test:all": "jest",

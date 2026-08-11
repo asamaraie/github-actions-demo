@@ -1,11 +1,13 @@
 const fs = require('fs');
 const path = require('path');
+const { getApiBaseUrl } = require('../src/config');
 
 const distDir = path.join(__dirname, '..', 'dist');
 
-// Simulate a "build": in a real app this might be webpack/vite/esbuild.
-// Here we just generate a static index.html that calls the API.
-const html = `<!DOCTYPE html>
+function createHtml(apiBaseUrl) {
+  const helloUrl = `${apiBaseUrl}/api/hello`;
+
+  return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -14,7 +16,7 @@ const html = `<!DOCTYPE html>
 <body>
   <h1 id="message">Loading...</h1>
   <script>
-    fetch('/api/hello')
+    fetch(${JSON.stringify(helloUrl)})
       .then((res) => res.json())
       .then((data) => {
         document.getElementById('message').textContent = data.message;
@@ -26,8 +28,11 @@ const html = `<!DOCTYPE html>
 </body>
 </html>
 `;
+}
 
-function build() {
+function build({ apiBaseUrl = getApiBaseUrl() } = {}) {
+  const html = createHtml(apiBaseUrl);
+
   if (fs.existsSync(distDir)) {
     fs.rmSync(distDir, { recursive: true, force: true });
   }
@@ -37,4 +42,8 @@ function build() {
   console.log('Build complete: dist/index.html created');
 }
 
-build();
+if (require.main === module) {
+  build();
+}
+
+module.exports = { createHtml, getApiBaseUrl, build };
