@@ -35,8 +35,19 @@ jobs:
         run: npm run build
 
       - name: Deploy to production
+        env:
+          RENDER_SITE_DEPLOY_HOOK: ${{ secrets.RENDER_SITE_DEPLOY_HOOK }}
+          RENDER_API_DEPLOY_HOOK: ${{ secrets.RENDER_API_DEPLOY_HOOK }}
         run: |
+          if [ -z "$RENDER_SITE_DEPLOY_HOOK" ]; then
+            echo "::error::RENDER_SITE_DEPLOY_HOOK secret is not set. Configure it in the production environment."
+            exit 1
+          fi
+          if [ -z "$RENDER_API_DEPLOY_HOOK" ]; then
+            echo "::error::RENDER_API_DEPLOY_HOOK secret is not set. Configure it in the production environment."
+            exit 1
+          fi
           echo "Trigger Production site deploy via Render deploy hook"
-          curl -fsS -X POST "${{ secrets.RENDER_SITE_DEPLOY_HOOK }}"
+          curl -fsS -X POST "$RENDER_SITE_DEPLOY_HOOK"
           echo "Trigger Production API deploy via Render deploy hook"
-          curl -fsS -X POST "${{ secrets.RENDER_API_DEPLOY_HOOK }}"
+          curl -fsS -X POST "$RENDER_API_DEPLOY_HOOK"
