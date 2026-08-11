@@ -27,6 +27,9 @@ jobs:
         run: npm ci
 
       - name: Build
+        env:
+          APP_ENV: staging
+          API_BASE_URL: ${{ vars.API_URL }}
         run: npm run build
 
       - name: Deploy to staging
@@ -48,7 +51,7 @@ jobs:
         run: sleep 60
 
       - name: Smoke test staging site
-        run: curl -sSL "${{ vars.SITE_URL }}" | grep "Hello, World!"
+        run: curl -fsSL "${{ vars.SITE_URL }}" | grep -F "${{ vars.API_URL }}/api/hello"
 
       - name: Smoke test staging API
         run: curl -sSL "${{ vars.API_URL }}/api/hello" | grep "Hello, World!"
