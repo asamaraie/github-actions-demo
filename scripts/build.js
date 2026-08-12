@@ -15,15 +15,21 @@ function createHtml(apiBaseUrl) {
 </head>
 <body>
   <h1 id="message">Loading...</h1>
+  <button id="refresh">Say Hello Again</button>
   <script>
-    fetch(${JSON.stringify(helloUrl)})
-      .then((res) => res.json())
-      .then((data) => {
-        document.getElementById('message').textContent = data.message;
-      })
-      .catch(() => {
-        document.getElementById('message').textContent = 'Failed to load message';
-      });
+    function loadMessage() {
+      fetch(${JSON.stringify(helloUrl)})
+        .then((res) => res.json())
+        .then((data) => {
+          document.getElementById('message').textContent = data.message;
+        })
+        .catch(() => {
+          document.getElementById('message').textContent = 'Failed to load message';
+        });
+    }
+
+    document.getElementById('refresh').addEventListener('click', loadMessage);
+    loadMessage();
   </script>
 </body>
 </html>

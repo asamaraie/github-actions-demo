@@ -14,6 +14,23 @@ npm start
 `APP_ENV=local` is default. Express serves `dist` and `/api/hello` from one process, so frontend
 uses same-origin `/api/hello`.
 
+## End-to-end tests
+
+E2E tests use [Playwright](https://playwright.dev) to drive a real browser against the page,
+including clicking the "Say Hello Again" button.
+
+```sh
+npx playwright install --with-deps   # once, to download browsers
+npm run test:e2e
+```
+
+By default this builds the app and starts it locally (`http://localhost:3000`). To run the same
+tests against a deployed site instead, set `E2E_BASE_URL`:
+
+```sh
+E2E_BASE_URL=https://<staging-site>.onrender.com npm run test:e2e
+```
+
 ## Render: separate API and static site
 
 Staging and production each need two Render services. Do not host frontend through API Web Service.
