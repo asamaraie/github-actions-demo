@@ -28,4 +28,12 @@ describe('createHtml', () => {
       'fetch("https://api.example.com/api/hello")'
     );
   });
+
+  it('includes a refresh button wired to reload the message', () => {
+    const html = createHtml('https://api.example.com');
+    expect(html).toContain('<button id="refresh">Say Hello Again</button>');
+    expect(html).toContain(
+      "document.getElementById('refresh').addEventListener('click', loadMessage)"
+    );
+  });
 });

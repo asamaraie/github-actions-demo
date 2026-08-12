@@ -50,8 +50,25 @@ jobs:
       - name: Wait for Render deploys to finish
         run: sleep 60
 
-      - name: Smoke test staging site
-        run: curl -fsSL "${{ vars.SITE_URL }}" | grep -F "${{ vars.API_URL }}/api/hello"
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: E2E test staging site
+        env:
+          E2E_BASE_URL: ${{ vars.SITE_URL }}
+        run: npm run test:e2e
 
       - name: Smoke test staging API
         run: curl -sSL "${{ vars.API_URL }}/api/hello" | grep "Hello, World!"
