@@ -31,7 +31,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Isolate Docker config
         run: mkdir -p "$DOCKER_CONFIG"
@@ -74,3 +74,9 @@ jobs:
         env:
           E2E_BASE_URL: http://${{ env.INGRESS_HOST }}:8080
         run: npm run test:e2e
+
+      - name: Clean up old images and build cache
+        # Runs even if the e2e step failed - a failed deploy still leaves a
+        # pushed image behind, and disk-pressure is what breaks this cluster.
+        if: always()
+        run: ./scripts/cleanup-registry.sh

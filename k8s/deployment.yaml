@@ -7,6 +7,9 @@ metadata:
     app: hello-world
 spec:
   replicas: ${REPLICAS}
+  # Bounds how far `rollout undo` reaches, and therefore how many images
+  # scripts/cleanup-registry.sh must keep.
+  revisionHistoryLimit: 3
   selector:
     matchLabels:
       app: hello-world
