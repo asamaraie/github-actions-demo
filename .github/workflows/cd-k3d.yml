@@ -18,6 +18,12 @@ env:
   INGRESS_HOST: hello.localhost
   # Traefik on the k3d loadbalancer, mapped with -p "8080:80@loadbalancer".
   CLUSTER_URL: http://localhost:8080
+  # The dev container sets credsStore to a VS Code IPC helper that only
+  # resolves in an interactive terminal. The runner has no IPC, so the
+  # helper exits 255 and BuildKit cannot resolve even public images.
+  # Nothing here needs credentials: public base images, unauthenticated
+  # local registry. So point Docker at an empty config of our own.
+  DOCKER_CONFIG: ${{ github.workspace }}/.docker
 
 jobs:
   deploy-k3d:
@@ -26,6 +32,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Isolate Docker config
+        run: mkdir -p "$DOCKER_CONFIG"
 
       - name: Start local registry
         run: docker compose up -d registry
