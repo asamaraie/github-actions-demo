@@ -1,0 +1,15 @@
+node_modules
+dist
+.git
+.github
+.gitignore
+coverage
+playwright-report
+test-results
+.env
+.env.example
+tests
+k8s
+k3d
+playwright.config.js
+*.md

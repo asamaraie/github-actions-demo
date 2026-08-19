@@ -1,0 +1,67 @@
+name: Deploy to k3d
+
+# Runs when main is merged into release/v1.
+#
+# This job MUST run on a self-hosted runner inside the dev container: the
+# k3d cluster's API server has no public endpoint, so a GitHub-hosted
+# runner could build the image but never `kubectl apply` it. Register the
+# runner with the label `k3d`. Deploys queue while the dev container is
+# down rather than failing.
+on:
+  push:
+    branches:
+      - release/v1
+  workflow_dispatch: {}
+
+env:
+  IMAGE_NAME: localhost:5000/hello-world-app
+  INGRESS_HOST: hello.localhost
+  # Traefik on the k3d loadbalancer, mapped with -p "8080:80@loadbalancer".
+  CLUSTER_URL: http://localhost:8080
+
+jobs:
+  deploy-k3d:
+    runs-on: [self-hosted, k3d]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Start local registry
+        run: docker compose up -d registry
+
+      - name: Build image
+        env:
+          TAG: ${{ github.sha }}
+        run: docker compose build app
+
+      - name: Push image to local registry
+        env:
+          TAG: ${{ github.sha }}
+        run: docker compose push app
+
+      - name: Deploy to cluster
+        env:
+          IMAGE: ${{ env.IMAGE_NAME }}:${{ github.sha }}
+          REPLICAS: '2'
+          INGRESS_HOST: ${{ env.INGRESS_HOST }}
+        run: ./scripts/deploy-k8s.sh
+
+      - name: Smoke test API
+        # Host header instead of DNS: *.localhost doesn't resolve everywhere.
+        run: |
+          curl -sSf -H "Host: ${INGRESS_HOST}" "${CLUSTER_URL}/api/hello" | grep "Hello, World!"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium
+
+      - name: E2E test deployed app
+        # playwright.config.js skips its own webServer when E2E_BASE_URL is set.
+        # Chromium resolves *.localhost to loopback itself, so no /etc/hosts
+        # entry is needed here (unlike a plain browser on the host).
+        env:
+          E2E_BASE_URL: http://${{ env.INGRESS_HOST }}:8080
+        run: npm run test:e2e

@@ -1,0 +1,32 @@
+# Builds the app image and pushes it to a local registry that the k3d
+# cluster pulls from. See k3d/registries.yaml for the cluster-side wiring.
+services:
+  registry:
+    image: registry:2
+    container_name: local-registry
+    restart: unless-stopped
+    ports:
+      # Host port is overridable: macOS AirPlay Receiver squats on 5000.
+      # If you change it, add a matching mirror in k3d/registries.yaml.
+      - '${REGISTRY_PORT:-5000}:5000'
+    volumes:
+      - registry-data:/var/lib/registry
+
+  app:
+    build:
+      context: .
+    # localhost:5000 is insecure-by-default for docker push, so no
+    # daemon config is needed. k3s rewrites this host via a mirror.
+    image: localhost:${REGISTRY_PORT:-5000}/hello-world-app:${TAG:-dev}
+    container_name: hello-world-app
+    restart: unless-stopped
+    environment:
+      APP_ENV: local
+      PORT: '3000'
+    ports:
+      - '3000:3000'
+    depends_on:
+      - registry
+
+volumes:
+  registry-data:

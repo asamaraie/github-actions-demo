@@ -11,6 +11,7 @@ on:
   pull_request:
     branches:
       - main
+      - release/v1
 
 jobs:
   build-and-test:
@@ -49,6 +50,11 @@ jobs:
 
       - name: Run e2e tests
         run: npm run test:e2e
+
+      - name: Validate Dockerfile builds
+        # Build only, no push - catches a broken image at PR time rather
+        # than when cd-k3d tries to deploy it.
+        run: docker build -t hello-world-app:ci .
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4

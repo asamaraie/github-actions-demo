@@ -1,0 +1,21 @@
+# Tell k3s to resolve images tagged localhost:5000/... from the
+# registry:2 container instead. The registry container must be on the
+# cluster's docker network for `local-registry` to resolve:
+#
+#   docker network connect k3d-<cluster-name> local-registry
+#
+# Create the cluster with:
+#   k3d cluster create my-cluster \
+#     --registry-config ./k3d/registries.yaml \
+#     -p "8080:80@loadbalancer"
+#
+# Both ports are listed so REGISTRY_PORT=5001 (a macOS workaround, since
+# AirPlay Receiver squats on 5000) also resolves. The endpoint always uses
+# the registry container's own port 5000 on the docker network.
+mirrors:
+  'localhost:5000':
+    endpoint:
+      - 'http://local-registry:5000'
+  'localhost:5001':
+    endpoint:
+      - 'http://local-registry:5000'
