@@ -2,7 +2,7 @@
 # registry:2 container instead. The registry container must be on the
 # cluster's docker network for `local-registry` to resolve:
 #
-#   docker network connect k3d-<cluster-name> local-registry
+#   docker network connect k3d-my-cluster local-registry
 #
 # Create the cluster with:
 #   k3d cluster create my-cluster \
